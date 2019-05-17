@@ -1,11 +1,7 @@
-data_dirs: 
+data_dirs:
    - "/tmp/kafka-logs"
 cluster: "test1"
 delay: 1
 prom_file: "prom/test.prom"
-topics:
-  - "test-0"
-  - "test-1"
-  - "test-2"
 brokers:
    - localhost:9092

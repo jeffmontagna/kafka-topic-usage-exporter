@@ -38,6 +38,7 @@ func main() {
 
 	for {
 		topics := GetKafkaTopics(brokers)
+
 		hostname, err := os.Hostname()
 		if err != nil {
 			panic(err)
@@ -52,11 +53,12 @@ func main() {
 
 			for _, topic := range topics {
 				var topicSize int64
+				topicSize = 0
 				for _, file := range dirListing {
 					topic := topic + "-"
 					if strings.HasPrefix(file.Name(), topic) {
 						dirname := path.Join(logDir, file.Name())
-						topicSize = topicSize + DirSizeBytes(dirname)
+						topicSize = topicSize + GetDirSizeBytes(dirname)
 					}
 				}
 				var message = fmt.Sprintf("kafka_topic_disk_usage_bytes{kafka_log_dir=\"%v\", kafka_topic=\"%v\", kafka_node=\"%v\", kafka_cluster=\"%v\"} %v\n", logDir, topic, hostname, cluster, topicSize)
@@ -77,7 +79,7 @@ func main() {
 /*
  get the directory size in bytes
 */
-func DirSizeBytes(path string) int64 {
+func GetDirSizeBytes(path string) int64 {
 
 	var dirSize int64
 
@@ -90,7 +92,6 @@ func DirSizeBytes(path string) int64 {
 	}
 
 	filepath.Walk(path, readSize)
-
 	return dirSize
 }
 
@@ -103,6 +104,7 @@ func GetKafkaTopics(brokers []string) []string {
 
 	if err == nil {
 		topics, _ = consumer.Topics()
+		consumer.Close()
 	}
 
 	return topics
