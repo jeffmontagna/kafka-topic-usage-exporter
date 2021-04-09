@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,6 +14,10 @@ import (
 
 	"github.com/Shopify/sarama"
 	"github.com/spf13/viper"
+)
+
+var (
+	version string
 )
 
 func main() {
@@ -36,6 +41,10 @@ func main() {
 	var delay = viper.GetInt("delay")
 	brokers := viper.GetStringSlice("brokers")
 
+	if *verbose {
+		fmt.Printf("kafka-topic-usage-exporter start version:%s\n", version)
+	}
+
 	for {
 		topics := GetKafkaTopics(brokers)
 
@@ -45,7 +54,6 @@ func main() {
 		}
 		var lines []string
 		for _, logDir := range dataDirs {
-
 			dirListing, err := ioutil.ReadDir(logDir)
 			if err != nil {
 				log.Fatal(err)
@@ -81,18 +89,25 @@ func main() {
 */
 func GetDirSizeBytes(path string) int64 {
 
-	var dirSize int64
+	var dirSize int64 = 0
 
-	readSize := func(path string, file os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(path string, file fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		if !file.IsDir() {
 			dirSize += file.Size()
 		}
-
 		return nil
+	})
+	if err != nil {
+		log.Printf("error with directory %q: %v\n", path, err)
+		return 0
+	} else {
+		return dirSize
+
 	}
 
-	filepath.Walk(path, readSize)
-	return dirSize
 }
 
 func GetKafkaTopics(brokers []string) []string {
