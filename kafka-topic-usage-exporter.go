@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
-	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,8 +15,9 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/spf13/viper"
 )
+
 var (
-    version string
+	version string
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file
-       panic(fmt.Errorf("fatal error config file: %s", err))
+		panic(fmt.Errorf("fatal error config file: %s", err))
 	}
 
 	dataDirs := viper.GetStringSlice("data_dirs")
@@ -41,7 +42,7 @@ func main() {
 	brokers := viper.GetStringSlice("brokers")
 
 	if *verbose {
-       fmt.Printf("kafka-topic-usage-exporter start version:%s\n", version)
+		fmt.Printf("kafka-topic-usage-exporter start version:%s\n", version)
 	}
 
 	for {
@@ -94,7 +95,7 @@ func GetDirSizeBytes(path string) int64 {
 		if err != nil {
 			return err
 		}
-		if !file.IsDir()  {
+		if !file.IsDir() {
 			dirSize += file.Size()
 		}
 		return nil
@@ -103,7 +104,7 @@ func GetDirSizeBytes(path string) int64 {
 		log.Printf("error with directory %q: %v\n", path, err)
 		return 0
 	} else {
-	    return dirSize
+		return dirSize
 
 	}
 
